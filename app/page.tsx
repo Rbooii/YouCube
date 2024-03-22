@@ -1,113 +1,175 @@
-import Image from "next/image";
+"use client"
+import { ToggleTheme } from '@/components/ToggleTheme'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import React, { useState } from 'react'
 
-export default function Home() {
+import { FileAudio, FileVideo, Loader2} from 'lucide-react'
+
+function Homepage() {
+  const [btnloading, setBtnLoading] = useState<boolean>(false)
+  const [btnloadingAudio, setBtnLoadingAudio] = useState<boolean>(false)
+  const [link, setLink] = useState<string>("")
+  // Function to extract video ID from YouTube link
+  function extractVideoId(url: string): string | null {
+    const regExp = /^.*(youtu.be\/|v\/|e\/|u\/\w+\/|embed\/|v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11 ? match[2] : null;
+  }
+
+  // Function to generate YouTube embed URL
+  function generateEmbedUrl(videoId: string | null): string | null {
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+  }
+
+  const videoId = extractVideoId(link);
+  const embedUrl = generateEmbedUrl(videoId);
+
+  const handleVideo = async () => {
+    try {
+      setBtnLoading(true)
+      const req = await fetch('/api/Download/video', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          url: link,
+          id: videoId
+        })
+      });
+
+      const res = await req.json();
+      const resDownload = res.videoDownloadUrl;
+
+      // Create a temporary link element
+      const downloadLink = document.createElement('a');
+      downloadLink.href = resDownload;
+      downloadLink.target = "_blank"
+      downloadLink.setAttribute('download', 'video.mp4'); // Set the file name
+      document.body.appendChild(downloadLink);
+
+      // Trigger the download
+      downloadLink.click();
+
+      // Clean up
+      document.body.removeChild(downloadLink);
+      setBtnLoading(false)
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleAudio = async () => {
+    try {
+      setBtnLoadingAudio(true)
+      const req = await fetch('/api/Download/Audio', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          url: link,
+          id: videoId
+        })
+      });
+
+      const res = await req.json();
+      const resDownload = res.audioDownloadUrl;
+
+      // Create a temporary link element
+      const downloadLink = document.createElement('a');
+      downloadLink.target = "_blank"
+      downloadLink.href = resDownload;
+      downloadLink.setAttribute('download', 'video.mp3'); // Set the file name
+      document.body.appendChild(downloadLink);
+
+      // Trigger the download
+      downloadLink.click();
+
+      // Clean up
+      document.body.removeChild(downloadLink);
+      setBtnLoadingAudio(false)
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+    <main className='md:w-8/12 w-11/12 mx-auto min-h-screen'>
+      <div className='w-full min-h-fit pt-5'>
+        <ToggleTheme />
       </div>
+      <h1 className='text-center text-5xl font-bold text-red-500'>YouCube</h1>
+      <p className='text-center'>A perfect minimalist Youtube Downloader</p>
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+      <Input placeholder='Video Link' className='mt-5 mx-auto lg:w-9/12 w-11/12 rounded-3xl p-4 font-xl'
+        value={link}
+        onChange={(e) => setLink(e.target.value)}
+      ></Input>
 
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
+      {embedUrl && (
+        <>
+          <iframe
+            src={embedUrl}
+            title="YouTube video player"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className='mx-auto mt-7 rounded-xl w-[320px] h-[200px]'
+          ></iframe>
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
+          <Card className='lg:w-9/12 w-11/12 mx-auto mt-5 mb-5 rounded-3xl'>
+            <CardHeader>
+              <CardTitle>Download Options</CardTitle>
+              <CardDescription>Choose Your Prefered Download Options!</CardDescription>
+            </CardHeader>
+            <CardContent className='flex gap-3 items-center justify-center max-[445px]:block'>
+              <Button onClick={handleVideo}
+                className='max-[445px]:block max-[445px]:mx-auto hover:scale-105 transition-transform'
+              ><div className='flex'>
+                  {btnloading && <Loader2 className='mr-2 h-4 w-4 mt-1 animate-spin' />}
+                  Download Video<FileVideo className='ml-2' /></div></Button>
+              <Button onClick={handleAudio}
+                className='max-[445px]:block max-[445px]:mx-auto max-[445px]:mt-3 hover:scale-105 transition-transform'
+              ><div className='flex'>
+                  {btnloadingAudio && <Loader2 className='mr-2 h-4 w-4 mt-1 animate-spin' />}
+                  Download Audio<FileAudio className='ml-2' /></div></Button>
+            </CardContent>
+          </Card>
+        </>
+      )}
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+      <Card className='lg:w-9/12 w-11/12 mx-auto mt-5 mb-5 rounded-3xl'>
+        <CardHeader>
+          <CardTitle className='text-5xl font-bold text-red-500 text-center'>How To Use ?</CardTitle>
+        </CardHeader>
+        <CardContent>                   
+          <ul className='list-decimal ml-10 text-xl'>
+            <li className='mt-1'>Paste The Youtube link</li>
+            <li className='mt-1'>Choose wether you want to Download A video or Audio</li>
+            <li className='mt-1'>Click One of the button</li>
+            <li className='mt-1'>if its Loading just wait usually it wouldn't take up to 1 minute</li>
+            <li className='mt-1'>a new Page(tab) with weird url will be opened dont worry its not some sketchy website, its Actually Google's server!</li>
+            <li className='mt-1'>Hit the 3 dots and choose download (the video quality is 1:1 with the downloaded video so you can preview it before you download it)</li>
+            <li className='mt-1'>If the download wont start, close the Tab (the weird url one)</li>
+            <li className='mt-1'>Your Download Will eventually Begin soon!</li>
+          </ul>
+          <h2 className='text-5xl text-center font-bold mt-3 mb-2 text-red-500'>How it works ?</h2>
+          <p className='text-xl'>Hello, Developer Here trying to explain How this Thing Works, so Basically This app Has a Few Steps but For short This app is actually Turning A youtube Video Into A raw GoogleVideo.com Video link Where you can Download the Audio or The Video!</p>
+          <ul className='list-disc ml-10 text-xl mt-5'>
+            <li className='mt-1'>Link from Youtube url you pasted in is Converted into id</li>
+            <li className='mt-1'>id from your video is send to our magically converting server</li>
+            <li className='mt-1'>if you choose Video the server will return with a link from googlevideo.com wich basically store that video in google's server (i guess lol)</li>
+            <li className='mt-1'>vice versa for Audio</li>
+            <li className='mt-1'>and then a New Tab will open in your browser</li>
+            <li className='mt-1'>Voila! just click the three dots and choose download! (you can preview the vid/aud before you Download it!)</li>
+          </ul>
+        </CardContent>
+      </Card>
     </main>
-  );
+  )
 }
+
+export default Homepage
