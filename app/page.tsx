@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import React, { useState } from 'react'
 
-import { FileAudio, FileVideo, Loader2} from 'lucide-react'
+import { FileAudio, FileVideo, Loader2 } from 'lucide-react'
 
 function Homepage() {
   const [btnloading, setBtnLoading] = useState<boolean>(false)
@@ -145,7 +145,7 @@ function Homepage() {
         <CardHeader>
           <CardTitle className='text-5xl font-bold text-red-500 text-center'>How To Use ?</CardTitle>
         </CardHeader>
-        <CardContent>                   
+        <CardContent>
           <ul className='list-decimal ml-10 text-xl'>
             <li className='mt-1'>Paste The Youtube link</li>
             <li className='mt-1'>Choose wether you want to Download A video or Audio</li>
@@ -167,6 +167,38 @@ function Homepage() {
             <li className='mt-1'>Voila! just click the three dots and choose download! (you can preview the vid/aud before you Download it!)</li>
           </ul>
         </CardContent>
+      </Card>
+      <Card className='lg:w-9/12 w-11/12 mx-auto mt-5 mb-5 rounded-3xl'>
+        <CardHeader>
+          <CardTitle className='text-5xl font-bold text-red-500 text-center'>
+            API endpoints
+          </CardTitle>
+          <CardContent>
+            <p className='text-center mt-2 mb-2'>To get some Video Download Link You can Hit Theese Api Endpoints :</p>
+            <h2 className='text-center text-xl text-red-500 font-bold mt-2'>https://youcube-dl.vercel.app/api/Download/video</h2>
+            <h2 className='text-center text-xl text-red-500 font-bold mt-2 mb-3'>https://youcube-dl.vercel.app/api/Download/Audio</h2>
+            <Card className='p-4'>
+              <CardTitle>Fetch</CardTitle>
+              <CardContent className='p-3'>
+                method : <span className='text-orange-600'>POST</span><br></br>
+                Json Body :
+                &#123;
+                <span className='text-blue-500'>"url" : "Youtube Video URL"</span>
+                &#125;<br></br>
+                Json Success Return : <br></br>
+                <span className='text-green-500'>
+                  &#123;
+                  "audioDownloadUrl" : "Value"
+                  &#125;<br></br>
+                  or
+                  &#123;
+                  "videoDownloadUrl" : "Value"
+                  &#125;
+                </span>
+              </CardContent>
+            </Card>
+          </CardContent>
+        </CardHeader>
       </Card>
     </main>
   )
